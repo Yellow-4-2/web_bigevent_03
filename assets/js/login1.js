@@ -1,14 +1,19 @@
 $(function () {
+    // 点击“去注册账号”的链接
     $('#link_reg').on('click', function () {
-        $('.reg-box').show();
         $('.login-box').hide()
+        $('.reg-box').show();
     })
+
+    // 点击“去登录”的链接
     $('#link_login').on('click', function () {
-        $('.login-box').show()
+        $('.login-box').show();
         $('.reg-box').hide();
     })
 
-    var form = layui.form;
+    // 从 layui 中获取 form 对象
+    var form = layui.form
+    // 自定义 form.verify() 函数自定义校验规则
     form.verify({
         username: function (value, item) {
             //value：表单的值、item：表单的DOM对象
@@ -39,36 +44,55 @@ $(function () {
                 return "两次密码不一致！"
             }
         }
-    });
+    })
 
-    var layer = layui.layer;
-
+    // 4. 注册功能
+    var layer = layui.layer
+    // 监听注册表单的提交事件
     $('#form_reg').on('submit', function (e) {
+        // 阻止表单提交
         e.preventDefault();
+        // 发送ajax
         $.ajax({
-            type: 'POST',
+            method: 'POST',
             url: '/api/reguser',
-            data: $(this).serialize(),
+            data: {
+                username: $('.reg-box [name=username]').val(),
+                password: $('.reg-box [name=password]').val(),
+            },
             success: function (res) {
-                if (res.status != 0) return layer.msg(res.message);
-                layer.msg(res.message);
+                if (res.status != 0) {
+                    // console.log(res);
+                    return layer.msg(res.message);
+                }
+                // 提交成功后处理代码
+                layer.msg("注册成功，请登录！")
+                // 模拟人的点击行为
                 $('#link_login').click();
-                $('#form_reg')[0].reset();
+                // 重置form表单
+                $('#form_reg')[0].reset()
             }
         })
     })
 
+    // 5. 登录功能(给form标签绑定事件，button按钮触发提交 事件)
     $('#form_login').on('submit', function (e) {
+        // 阻止表单提交
         e.preventDefault();
         $.ajax({
-            type: 'POST',
             url: '/api/login',
+            method: 'POST',
+            // 快速获取表单中的数据
             data: $(this).serialize(),
             success: function (res) {
-                if (res.status != 0) return layer.msg('登录失败！');
-                layer.msg('登录成功!')
+                if (res.status !== 0) {
+                    return layer.msg('登录失败！')
+                }
+                layer.msg('登录成功！')
+                // 将登录成功得到的 token 字符串，保存到localStorage
                 localStorage.setItem('token', res.token)
-                console.log(location.href);
+                // console.log(location.href);
+                // 跳转到后台主页
                 location.href = '/index.html'
             }
         })
